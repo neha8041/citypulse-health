@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  citypulse-health:
+    build:
+      context: ..
+      dockerfile: devops/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: development
