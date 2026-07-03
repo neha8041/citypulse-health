@@ -21,3 +21,6 @@ jobs:
       - name: Run pylint
         run: |
           python -m pylint app data
+      - name: Run pylint
+        run: |
+          python -m pylint app data --fail-on=E,F
