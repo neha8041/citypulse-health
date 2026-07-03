@@ -6,5 +6,7 @@ services:
       dockerfile: devops/Dockerfile
     ports:
       - "8000:8000"
+    env_file:
+      - ../.env
     environment:
-      APP_ENV: development
+      PORT: "8000"
