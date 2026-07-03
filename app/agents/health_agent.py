@@ -7,6 +7,11 @@ from google.cloud import bigquery
 
 PROJECT_ID = "citypulse-health-2026"
 DATASET_ID = "citypulse_health"
+LOCATION = "us-central1"
+
+os.environ["GOOGLE_CLOUD_PROJECT"] = PROJECT_ID
+os.environ["GOOGLE_CLOUD_LOCATION"] = LOCATION
+os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "TRUE"
 
 bq_client = bigquery.Client(project=PROJECT_ID)
 
