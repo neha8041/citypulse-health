@@ -1,0 +1,23 @@
+[MASTER]
+ignore=venv,.venv
+
+[TYPECHECK]
+extension-pkg-allow-list=
+ignored-modules=
+    google,
+    google.adk,
+    google.adk.agents,
+    google.adk.runners,
+    google.adk.sessions,
+    google.genai,
+    google.cloud,
+    requests
+
+[MESSAGES CONTROL]
+disable=
+    C0114,
+    C0116,
+    C0415,
+    W0621,
+    R0903,
+    W0718
