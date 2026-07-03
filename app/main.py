@@ -36,3 +36,4 @@ async def get_briefing() -> dict:
 @app.post("/chat")
 async def chat(payload: ChatRequest) -> dict:
     return chat_agent.run({"message": payload.message})
+
