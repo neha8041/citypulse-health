@@ -27,7 +27,7 @@ class MorningBriefingAgent(BaseAgent):
         highest_risk = context.get("highest_outbreak_probability", "Unknown")
         complaints = context.get("complaint_volume_change", "Unknown")
         maternal = context.get("maternal_appointment_change", "Unknown")
-        
+
         return {
             "summary": (
                 f"Overnight, city-wide health signals were processed. "
