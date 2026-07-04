@@ -1,6 +1,8 @@
+import functools
 import logging
 import random
 from datetime import datetime, timedelta
+
 from google.cloud import bigquery
 from who_api import fetch_and_store_who_data
 
@@ -8,8 +10,6 @@ logger = logging.getLogger(__name__)
 
 PROJECT_ID = "citypulse-health-2026"
 DATASET_ID = "citypulse_health"
-
-import functools
 
 @functools.lru_cache(maxsize=1)
 def _get_bq_client():
