@@ -123,6 +123,7 @@ jobs:
             --region "$REGION" \
             --platform managed \
             --allow-unauthenticated \
+            --service-account "citypulse-health-run@${PROJECT_ID}.iam.gserviceaccount.com" \
             --set-env-vars "NEXT_PUBLIC_BACKEND_URL=${BACKEND_URL}"
 
       - name: Print deployed frontend URL
