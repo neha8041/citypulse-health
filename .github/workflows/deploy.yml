@@ -181,8 +181,9 @@ jobs:
             
             - **Frontend URL**: ${{ needs.deploy-frontend.outputs.frontend_url }}
             - **Backend URL**: ${{ needs.deploy.outputs.backend_url }}
+
+            ${{ steps.tag_version.outputs.changelog }}
           draft: false
           prerelease: false
-          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
