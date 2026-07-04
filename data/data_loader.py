@@ -1,12 +1,19 @@
+import functools
+import logging
 import random
 from datetime import datetime, timedelta
+
 from google.cloud import bigquery
 from who_api import fetch_and_store_who_data
+
+logger = logging.getLogger(__name__)
 
 PROJECT_ID = "citypulse-health-2026"
 DATASET_ID = "citypulse_health"
 
-client = bigquery.Client(project=PROJECT_ID)
+@functools.lru_cache(maxsize=1)
+def _get_bq_client():
+    return bigquery.Client(project=PROJECT_ID)
 
 ZONES = [
     {"zone_id": "Z01", "zone_name": "Zone 1 - North"},
@@ -101,20 +108,18 @@ def generate_city_summary(disease_rows):
 
 def insert_rows(table_id, rows):
     table_ref = f"{PROJECT_ID}.{DATASET_ID}.{table_id}"
-    errors = client.insert_rows_json(table_ref, rows)
+    errors = _get_bq_client().insert_rows_json(table_ref, rows)
     if errors:
-        print(f"Errors inserting into {table_id}: {errors}")
+        logger.error("Errors inserting into %s: %s", table_id, errors)
     else:
-        print(f"Inserted {len(rows)} rows into {table_id}")
+        logger.info("Inserted %d rows into %s", len(rows), table_id)
 
 def run():
-    print("=" * 50)
-    print("CityPulse Health — Data Loader")
-    print("=" * 50)
+    logger.info("CityPulse Health — Data Loader")
 
     who_data = fetch_and_store_who_data()
     base_vaccination = who_data.get("WHS4_100", 85.0) / 100.0
-    print(f"Using WHO vaccination coverage: {base_vaccination*100}%")
+    logger.info("Using WHO vaccination coverage: %s%%", base_vaccination*100)
     clinic_rows = generate_clinic_metrics()
     disease_rows = generate_disease_signals(base_vaccination)
     summary_rows = generate_city_summary(disease_rows)
@@ -123,9 +128,8 @@ def run():
     insert_rows("disease_signals", disease_rows)
     insert_rows("city_summary", summary_rows)
 
-    print("=" * 50)
-    print("Done. BigQuery tables populated with real + synthetic data.")
-    print("=" * 50)
+    logger.info("Done. BigQuery tables populated with real + synthetic data.")
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     run()

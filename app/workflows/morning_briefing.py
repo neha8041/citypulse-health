@@ -18,8 +18,8 @@ class MorningBriefingWorkflow:
         try:
             live_summary = get_city_summary()
             live_anomalies = get_anomalies()
-        except Exception as e:
-            # Fallback wrapper to make sure hackathon dashboard doesn't 
+        except Exception:
+            # Fallback wrapper to make sure hackathon dashboard doesn't
             # hard-crash if the database connection drops during presentation
             live_summary = {
                 "date": "System Live",

@@ -1,7 +1,6 @@
 from typing import Any, Dict
 
 from app.agents.base_agent import BaseAgent
-from app.config import OPENAI_API_KEY
 from app.services.llm_client import LLMClient
 
 
@@ -15,7 +14,7 @@ class ChatAgent(BaseAgent):
     name = "chat-agent"
 
     def __init__(self) -> None:
-        self.llm_client = LLMClient(api_key=OPENAI_API_KEY)
+        self.llm_client = LLMClient()
 
     def run(self, context: Dict[str, Any]) -> Dict[str, Any]:
         message = context.get("message", "")

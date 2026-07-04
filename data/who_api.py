@@ -1,12 +1,19 @@
+import functools
+import logging
 from datetime import datetime
+
 import requests
 from google.cloud import bigquery
+
+logger = logging.getLogger(__name__)
 
 WHO_BASE = "https://ghoapi.azureedge.net/api"
 PROJECT_ID = "citypulse-health-2026"
 DATASET_ID = "citypulse_health"
 
-bq_client = bigquery.Client(project=PROJECT_ID)
+@functools.lru_cache(maxsize=1)
+def _get_bq_client():
+    return bigquery.Client(project=PROJECT_ID)
 
 def fetch_and_store_who_data():
     """Fetch real WHO indicators for India and store in BigQuery"""
@@ -37,7 +44,7 @@ def fetch_and_store_who_data():
     now = datetime.utcnow().isoformat()
 
     for indicator in indicators:
-        print(f"Fetching WHO data: {indicator['name']}...")
+        logger.info("Fetching WHO data: %s...", indicator['name'])
         query_params = "?$filter=SpatialDim eq 'IND'&$orderby=TimeDim desc&$top=1"
         url = f"{WHO_BASE}/{indicator['code']}{query_params}"
         try:
@@ -57,25 +64,24 @@ def fetch_and_store_who_data():
                         "unit": indicator["unit"],
                         "recorded_at": now
                     })
-                    print(f"  Got: {value} ({year})")
+                    logger.info("  Got: %s (%s)", value, year)
                 else:
-                    print("  No value found")
+                    logger.warning("  No value found")
             else:
-                print("  No data returned")
+                logger.warning("  No data returned")
         except Exception as e:
-            print(f"  Error: {e}")
+            logger.error("  Error: %s", e)
 
     if rows:
-        errors = bq_client.insert_rows_json(
+        errors = _get_bq_client().insert_rows_json(
             f"{PROJECT_ID}.{DATASET_ID}.who_indicators",
             rows
         )
         if errors:
-            print(f"BigQuery insert errors: {errors}")
+            logger.error("BigQuery insert errors: %s", errors)
         else:
-            print(f"\nStored {len(rows)} WHO indicators in BigQuery")
+            logger.info("Stored %d WHO indicators in BigQuery", len(rows))
 
-    # Return as dict keyed by indicator code for easy lookup
     result = {}
     for r in rows:
         result[r["indicator_code"]] = r["value"]
@@ -91,18 +97,17 @@ def fetch_vaccination_coverage_india():
             latest = data["value"][0]
             coverage = latest.get("NumericValue", 85.0)
             year = latest.get("TimeDim", 2023)
-            print(f"WHO: India DTP3 vaccination coverage = {coverage}% (year {year})")
+            logger.info("WHO: India DTP3 vaccination coverage = %s%% (year %s)", coverage, year)
             return float(coverage) / 100.0
         return 0.85
     except Exception as e:
-        print(f"WHO API error: {e} — using fallback 85%")
+        logger.error("WHO API error: %s — using fallback 85%%", e)
         return 0.85
 
 if __name__ == "__main__":
-    print("=" * 50)
-    print("WHO Data Fetch and Store")
-    print("=" * 50)
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+    logger.info("WHO Data Fetch and Store")
     rows = fetch_and_store_who_data()
-    print("\nStored indicators:")
+    logger.info("Stored indicators:")
     for r in rows:
-        print(f"  {r['indicator_name']}: {r['value']} {r['unit']} ({r['year']})")
+        logger.info("  %s: %s %s (%s)", r['indicator_name'], r['value'], r['unit'], r['year'])

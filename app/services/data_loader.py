@@ -7,11 +7,12 @@ Real data loading is handled by data/data_loader.py which:
 """
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../data'))
 
-from data_loader import run as run_data_load
-from who_api import fetch_and_store_who_data
 from app.agents.health_agent import get_anomalies, get_city_summary, get_all_zones_summary
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../data'))
+# pylint: disable=wrong-import-position,wrong-import-order
+from data_loader import run as run_data_load
 
 class DataLoader:
     """Real data loader connecting to BigQuery and WHO API"""

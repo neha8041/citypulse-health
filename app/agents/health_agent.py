@@ -1,4 +1,6 @@
 import os
+import functools
+import logging
 from google.adk.agents import Agent
 from google.cloud import bigquery
 
@@ -10,18 +12,11 @@ os.environ["GOOGLE_CLOUD_PROJECT"] = PROJECT_ID
 os.environ["GOOGLE_CLOUD_LOCATION"] = LOCATION
 os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "TRUE"
 
-_bq_client = None
+logger = logging.getLogger(__name__)
 
-
+@functools.lru_cache(maxsize=1)
 def _get_bq_client():
-    global _bq_client
-    if _bq_client is None:
-        _bq_client = bigquery.Client(project=PROJECT_ID)
-    return _bq_client
-
-# ─────────────────────────────────────────────
-# TOOLS — functions the agent can call
-# ─────────────────────────────────────────────
+    return bigquery.Client(project=PROJECT_ID)
 
 def get_zone_health_status(zone_id: str) -> dict:
     """Get the latest health status for a specific zone including
@@ -260,10 +255,6 @@ This is time-sensitive — maternal health outcomes depend on timely care.
         "status": "READY_TO_SEND"
     }
 
-# ─────────────────────────────────────────────
-# ADK AGENT
-# ─────────────────────────────────────────────
-
 AGENT_INSTRUCTION = """
 You are CityPulse, an AI health intelligence agent for a city health official.
 You have access to real-time health data across 12 zones in the city.
@@ -346,31 +337,24 @@ async def run_agent(user_message: str):
 
 if __name__ == "__main__":
     import asyncio
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
-    print("=" * 50)
-    print("CityPulse Health Agent — ADK")
-    print("=" * 50)
+    logger.info("CityPulse Health Agent — ADK")
 
-    # Test 1: Morning briefing
-    print("\nTEST 1: Generate morning briefing")
-    print("-" * 40)
+    logger.info("TEST 1: Generate morning briefing")
     response = asyncio.run(run_agent(
         "Generate the morning briefing for today. Check all anomalies and give me a summary."
     ))
-    print(response)
+    logger.info(response)
 
-    # Test 2: Specific zone query
-    print("\nTEST 2: Zone 7 drill down")
-    print("-" * 40)
+    logger.info("TEST 2: Zone 7 drill down")
     response = asyncio.run(run_agent(
         "Give me the detailed health status for zone Z07"
     ))
-    print(response)
+    logger.info(response)
 
-    # Test 3: Draft an alert
-    print("\nTEST 3: Draft field alert for Zone 7")
-    print("-" * 40)
+    logger.info("TEST 3: Draft field alert for Zone 7")
     response = asyncio.run(run_agent(
         "Draft a field team alert for the dengue risk in zone Z07"
     ))
-    print(response)
+    logger.info(response)
