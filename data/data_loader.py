@@ -85,7 +85,7 @@ def generate_disease_signals(base_vaccination):
         })
     return rows
 
-def generate_city_summary(clinic_rows, disease_rows):
+def generate_city_summary(disease_rows):
     now = datetime.utcnow()
     max_outbreak = max(r["dengue_risk_score"] for r in disease_rows)
     return [{
@@ -117,7 +117,7 @@ def run():
     print(f"Using WHO vaccination coverage: {base_vaccination*100}%")
     clinic_rows = generate_clinic_metrics()
     disease_rows = generate_disease_signals(base_vaccination)
-    summary_rows = generate_city_summary(clinic_rows, disease_rows)
+    summary_rows = generate_city_summary(disease_rows)
 
     insert_rows("clinic_metrics", clinic_rows)
     insert_rows("disease_signals", disease_rows)

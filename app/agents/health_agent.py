@@ -299,10 +299,6 @@ def create_agent():
 
 async def run_agent(user_message: str):
     """Run the agent with a user message and return the response"""
-    import asyncio
-    from google.adk.runners import Runner
-    from google.adk.sessions import InMemorySessionService
-    from google.genai import types
 
     session_service = InMemorySessionService()
     agent = create_agent()
