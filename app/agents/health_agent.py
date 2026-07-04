@@ -12,7 +12,6 @@ os.environ["GOOGLE_CLOUD_PROJECT"] = PROJECT_ID
 os.environ["GOOGLE_CLOUD_LOCATION"] = LOCATION
 os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "TRUE"
 
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
 @functools.lru_cache(maxsize=1)
@@ -338,6 +337,7 @@ async def run_agent(user_message: str):
 
 if __name__ == "__main__":
     import asyncio
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
     logger.info("CityPulse Health Agent — ADK")
 

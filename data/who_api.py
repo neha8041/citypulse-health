@@ -4,7 +4,6 @@ import requests
 import functools
 from google.cloud import bigquery
 
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
 WHO_BASE = "https://ghoapi.azureedge.net/api"
@@ -105,6 +104,7 @@ def fetch_vaccination_coverage_india():
         return 0.85
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     logger.info("WHO Data Fetch and Store")
     rows = fetch_and_store_who_data()
     logger.info("Stored indicators:")

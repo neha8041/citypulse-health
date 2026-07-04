@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 from google.cloud import bigquery
 from who_api import fetch_and_store_who_data
 
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
 PROJECT_ID = "citypulse-health-2026"
@@ -132,4 +131,5 @@ def run():
     logger.info("Done. BigQuery tables populated with real + synthetic data.")
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     run()
