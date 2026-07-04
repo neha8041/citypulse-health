@@ -1,0 +1,635 @@
+@import "tailwindcss";
+
+/* ==========================================================
+   CityPulse Health Design System
+   ========================================================== */
+
+:root {
+
+  /* Backgrounds */
+  --background: #EEF3F8;
+  --surface: #FCFDFF;
+  --surface-hover: #F7FAFC;
+
+  /* Brand */
+  --primary: #2563EB;
+  --primary-hover: #1D4ED8;
+  --primary-light: #DBEAFE;
+
+  --secondary: #4F46E5;
+  --secondary-light: #EEF2FF;
+
+  /* Sidebar */
+  --sidebar: #12344D;
+  --sidebar-hover: #194969;
+  --sidebar-active: #1F5F8B;
+  --sidebar-text: #FFFFFF;
+
+  /* Typography */
+  --text-primary: #1F2937;
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
+
+  /* Borders */
+  --border: #DCE4EC;
+
+  /* Status */
+  --success: #15803D;
+  --success-bg: #DCFCE7;
+
+  --warning: #B45309;
+  --warning-bg: #FEF3C7;
+
+  --danger: #B91C1C;
+  --danger-bg: #FEE2E2;
+
+  --info: #2563EB;
+  --info-bg: #DBEAFE;
+
+  /* Card backgrounds */
+  --brief-bg: #F3F8FF;
+  --ai-bg: #F7F5FF;
+  --community-bg: #F2FBFA;
+  --resource-bg: #FFFFFF;
+
+  /* Radius */
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(15,23,42,.04);
+
+  --shadow-md: 0 4px 16px rgba(15,23,42,.06);
+
+  --shadow-lg: 0 10px 30px rgba(15,23,42,.08);
+
+  --transition: .18s ease;
+}
+
+/* ==========================================================
+   Reset
+   ========================================================== */
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+
+  background:var(--background);
+
+  color:var(--text-primary);
+
+  font-family:
+      Inter,
+      ui-sans-serif,
+      system-ui,
+      sans-serif;
+
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ==========================================================
+   Typography
+   ========================================================== */
+
+h1{
+
+  font-size:2rem;
+
+  font-weight:700;
+
+  color:var(--text-primary);
+
+}
+
+h2{
+
+  font-size:1.5rem;
+
+  font-weight:700;
+
+  color:var(--text-primary);
+
+}
+
+h3{
+
+  font-size:1.1rem;
+
+  font-weight:600;
+
+  color:var(--text-primary);
+
+}
+
+h4{
+
+  font-size:1rem;
+
+  font-weight:600;
+
+}
+
+p{
+
+  color:var(--text-secondary);
+
+  line-height:1.7;
+
+}
+
+small{
+
+  color:var(--text-muted);
+
+}
+
+a{
+
+  text-decoration:none;
+
+  color:inherit;
+
+}
+
+/* ==========================================================
+   Layout
+   ========================================================== */
+
+.page-container{
+
+  max-width:1650px;
+
+  margin:auto;
+
+  padding:30px;
+
+}
+
+.dashboard-grid{
+
+  display:grid;
+
+  grid-template-columns:
+
+      310px
+      1fr
+      360px;
+
+  gap:24px;
+
+}
+
+/* ==========================================================
+   Sidebar
+   ========================================================== */
+
+.sidebar{
+
+  background:var(--sidebar);
+
+  color:var(--sidebar-text);
+
+  border-radius:24px;
+
+  padding:24px;
+
+  box-shadow:var(--shadow-md);
+
+}
+
+.sidebar-item{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:12px;
+
+  padding:14px;
+
+  border-radius:14px;
+
+  cursor:pointer;
+
+  transition:.2s;
+
+}
+
+.sidebar-item:hover{
+
+  background:var(--sidebar-hover);
+
+}
+
+.sidebar-item.active{
+
+  background:var(--sidebar-active);
+
+}
+
+/* ==========================================================
+   Cards
+   ========================================================== */
+
+.card{
+
+  background:var(--surface);
+
+  border:1px solid var(--border);
+
+  border-radius:var(--radius-md);
+
+  box-shadow:var(--shadow-sm);
+
+  transition:all var(--transition);
+
+}
+
+.card:hover{
+
+  box-shadow:var(--shadow-md);
+
+}
+
+.card-padding{
+
+  padding:22px;
+
+}
+
+.card-header{
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  margin-bottom:18px;
+
+}
+
+.card-body{
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:18px;
+
+}
+
+/* Different card styles */
+
+.morning-card{
+
+  background:var(--brief-bg);
+
+}
+
+.ai-card{
+
+  background:var(--ai-bg);
+
+}
+
+.community-card{
+
+  background:var(--community-bg);
+
+}
+
+.resource-card{
+
+  background:var(--resource-bg);
+
+}
+
+/* ==========================================================
+   Buttons
+   ========================================================== */
+
+.btn{
+
+  display:inline-flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  gap:8px;
+
+  border:none;
+
+  cursor:pointer;
+
+  font-weight:600;
+
+  border-radius:12px;
+
+  transition:.2s;
+
+  padding:12px 20px;
+
+}
+
+.btn-primary{
+
+  background:var(--primary);
+
+  color:white;
+
+}
+
+.btn-primary:hover{
+
+  background:var(--primary-hover);
+
+}
+
+.btn-secondary{
+
+  background:white;
+
+  border:1px solid var(--border);
+
+}
+
+.btn-secondary:hover{
+
+  background:#F8FAFC;
+
+}
+
+/* ==========================================================
+   Badges
+   ========================================================== */
+
+.badge{
+
+  display:inline-flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  padding:5px 12px;
+
+  border-radius:999px;
+
+  font-size:.75rem;
+
+  font-weight:700;
+
+}
+
+.badge-success{
+
+  background:var(--success-bg);
+
+  color:var(--success);
+
+}
+
+.badge-warning{
+
+  background:var(--warning-bg);
+
+  color:var(--warning);
+
+}
+
+.badge-danger{
+
+  background:var(--danger-bg);
+
+  color:var(--danger);
+
+}
+
+.badge-info{
+
+  background:var(--info-bg);
+
+  color:var(--info);
+
+}
+
+/* ==========================================================
+   Forms
+   ========================================================== */
+
+input,
+textarea,
+select{
+
+  width:100%;
+
+  background:white;
+
+  border:1px solid var(--border);
+
+  border-radius:12px;
+
+  padding:12px 14px;
+
+  color:var(--text-primary);
+
+  transition:.2s;
+
+}
+
+input:focus,
+textarea:focus,
+select:focus{
+
+  outline:none;
+
+  border-color:var(--primary);
+
+  box-shadow:0 0 0 4px rgba(37,99,235,.12);
+
+}
+
+/* ==========================================================
+   Tables
+   ========================================================== */
+
+table{
+
+  width:100%;
+
+  border-collapse:collapse;
+
+}
+
+th{
+
+  text-align:left;
+
+  color:var(--text-secondary);
+
+  font-weight:600;
+
+  padding:14px;
+
+}
+
+td{
+
+  padding:16px 14px;
+
+  border-top:1px solid var(--border);
+
+}
+
+/* ==========================================================
+   Scrollbar
+   ========================================================== */
+
+::-webkit-scrollbar{
+
+  width:10px;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+  background:#CBD5E1;
+
+  border-radius:20px;
+
+}
+
+::-webkit-scrollbar-track{
+
+  background:transparent;
+
+}
+
+/* ==========================================================
+   Utility
+   ========================================================== */
+
+.text-primary{
+
+  color:var(--text-primary);
+
+}
+
+.text-secondary{
+
+  color:var(--text-secondary);
+
+}
+
+.text-muted{
+
+  color:var(--text-muted);
+
+}
+
+.flex{
+
+  display:flex;
+
+}
+
+.flex-column{
+
+  display:flex;
+
+  flex-direction:column;
+
+}
+
+.flex-between{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+}
+
+.flex-center{
+
+  display:flex;
+
+  align-items:center;
+
+}
+
+.gap-8{gap:8px;}
+.gap-12{gap:12px;}
+.gap-16{gap:16px;}
+.gap-20{gap:20px;}
+.gap-24{gap:24px;}
+
+.shadow-sm{
+
+  box-shadow:var(--shadow-sm);
+
+}
+
+.shadow-md{
+
+  box-shadow:var(--shadow-md);
+
+}
+
+.shadow-lg{
+
+  box-shadow:var(--shadow-lg);
+
+}
+
+/* ==========================================================
+   Responsive
+   ========================================================== */
+
+@media(max-width:1400px){
+
+.dashboard-grid{
+
+grid-template-columns:
+
+280px
+
+1fr;
+
+}
+
+}
+
+@media(max-width:1024px){
+
+.dashboard-grid{
+
+grid-template-columns:1fr;
+
+}
+
+.page-container{
+
+padding:18px;
+
+}
+
+.sidebar{
+
+border-radius:18px;
+
+}
+
+}

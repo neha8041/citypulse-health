@@ -29,13 +29,13 @@ async def health() -> dict:
     return {"message": "CityPulse Health API is running"}
 
 
-@app.get("/briefing")
+@app.get("/api/briefing")
 async def get_briefing() -> dict:
     """Generate the morning briefing."""
     return workflow.generate_briefing()
 
 
-@app.post("/chat")
+@app.post("/api/chat")
 async def chat(payload: ChatRequest) -> dict:
     """Process a chat message."""
     return chat_agent.run({"message": payload.message})
