@@ -1,5 +1,5 @@
-import requests
 from datetime import datetime
+import requests
 from google.cloud import bigquery
 
 WHO_BASE = "https://ghoapi.azureedge.net/api"
@@ -38,7 +38,8 @@ def fetch_and_store_who_data():
 
     for indicator in indicators:
         print(f"Fetching WHO data: {indicator['name']}...")
-        url = f"{WHO_BASE}/{indicator['code']}?$filter=SpatialDim eq 'IND'&$orderby=TimeDim desc&$top=1"
+        query_params = "?$filter=SpatialDim eq 'IND'&$orderby=TimeDim desc&$top=1"
+        url = f"{WHO_BASE}/{indicator['code']}{query_params}"
         try:
             r = requests.get(url, timeout=10)
             data = r.json()
@@ -58,9 +59,9 @@ def fetch_and_store_who_data():
                     })
                     print(f"  Got: {value} ({year})")
                 else:
-                    print(f"  No value found")
+                    print("  No value found")
             else:
-                print(f"  No data returned")
+                print("  No data returned")
         except Exception as e:
             print(f"  Error: {e}")
 
@@ -73,7 +74,7 @@ def fetch_and_store_who_data():
             print(f"BigQuery insert errors: {errors}")
         else:
             print(f"\nStored {len(rows)} WHO indicators in BigQuery")
-    
+
     # Return as dict keyed by indicator code for easy lookup
     result = {}
     for r in rows:

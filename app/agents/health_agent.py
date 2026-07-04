@@ -10,7 +10,14 @@ os.environ["GOOGLE_CLOUD_PROJECT"] = PROJECT_ID
 os.environ["GOOGLE_CLOUD_LOCATION"] = LOCATION
 os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "TRUE"
 
-bq_client = bigquery.Client(project=PROJECT_ID)
+_bq_client = None
+
+
+def _get_bq_client():
+    global _bq_client
+    if _bq_client is None:
+        _bq_client = bigquery.Client(project=PROJECT_ID)
+    return _bq_client
 
 # ─────────────────────────────────────────────
 # TOOLS — functions the agent can call
@@ -48,7 +55,7 @@ def get_zone_health_status(zone_id: str) -> dict:
         JOIN latest_clinic c ON d.zone_id = c.zone_id
         WHERE d.zone_id = '{zone_id}'
     """
-    results = bq_client.query(query).result()
+    results = _get_bq_client().query(query).result()
     rows = [dict(row) for row in results]
     if not rows:
         return {"error": f"Zone {zone_id} not found"}
@@ -92,7 +99,7 @@ def get_all_zones_summary() -> dict:
         JOIN latest_clinic c ON d.zone_id = c.zone_id
         ORDER BY d.dengue_risk_score DESC
     """
-    results = bq_client.query(query).result()
+    results = _get_bq_client().query(query).result()
     zones = []
     for row in results:
         r = dict(row)
@@ -137,7 +144,7 @@ def get_anomalies() -> dict:
            OR d.maternal_appointments < 25
         ORDER BY d.dengue_risk_score DESC
     """
-    results = bq_client.query(query).result()
+    results = _get_bq_client().query(query).result()
     anomalies = []
     for row in results:
         r = dict(row)
@@ -173,7 +180,7 @@ def get_city_summary() -> dict:
         ORDER BY recorded_at DESC
         LIMIT 1
     """
-    results = bq_client.query(query).result()
+    results = _get_bq_client().query(query).result()
     rows = [dict(row) for row in results]
     if not rows:
         return {"error": "No city summary found"}

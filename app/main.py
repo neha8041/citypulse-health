@@ -1,99 +1,41 @@
-import asyncio
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+from pathlib import Path
+
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
-from app.agents.health_agent import run_agent, get_anomalies, get_city_summary
 
-app = FastAPI(
-    title="CityPulse Health API",
-    description="AI-powered city health decision intelligence platform",
-    version="1.0.0"
-)
+from app.agents.chat_agent import ChatAgent
+from app.workflows.morning_briefing import MorningBriefingWorkflow
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"]
-)
+app = FastAPI(title="CityPulse Health", version="0.1.0")
+workflow = MorningBriefingWorkflow()
+chat_agent = ChatAgent()
+
+STATIC_DIR = Path(__file__).parent / "static"
+
 
 class ChatRequest(BaseModel):
+    """Request model for chat messages."""
     message: str
 
-class ChatResponse(BaseModel):
-    response: str
 
-@app.get("/")
-def root():
-    return {"status": "CityPulse Health API is running"}
+@app.get("/", response_class=HTMLResponse)
+async def root() -> HTMLResponse:
+    return HTMLResponse((STATIC_DIR / "index.html").read_text())
 
-@app.get("/health")
-def health_check():
-    return {"status": "healthy"}
 
-@app.get("/briefing")
-async def get_morning_briefing():
-    """Return structured briefing with anomalies and AI summary separately"""
-    try:
-        # Get structured anomalies directly from BigQuery
-        anomalies_data = get_anomalies()
+@app.get("/api/health")
+async def health() -> dict:
+    return {"message": "CityPulse Health API is running"}
 
-        # Get city summary directly from BigQuery
-        summary_data = get_city_summary()
 
-        # Get AI generated briefing text from agent
-        briefing_text = await run_agent(
-            "Generate the morning briefing for today. "
-            "Check all anomalies and give me a full summary with recommendations."
-        )
+@app.get("/api/briefing")
+async def get_briefing() -> dict:
+    """Generate the morning briefing."""
+    return workflow.generate_briefing()
 
-        return {
-            "briefing": briefing_text,
-            "anomalies": anomalies_data["anomalies"],
-            "anomaly_count": anomalies_data["anomaly_count"],
-            "summary": summary_data
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest):
-    """Ask the health agent any question in plain English"""
-    try:
-        response = await run_agent(request.message)
-        return ChatResponse(response=response)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/anomalies")
-async def get_anomalies_endpoint():
-    """Get all current health anomalies across the city"""
-    try:
-        response = await run_agent(
-            "List all current health anomalies across the city with details."
-        )
-        return {"anomalies": response}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/zones/{zone_id}")
-async def get_zone(zone_id: str):
-    """Get detailed health status for a specific zone"""
-    try:
-        response = await run_agent(
-            f"Give me the detailed health status for zone {zone_id}"
-        )
-        return {"zone_id": zone_id, "status": response}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/alert/{zone_id}/{issue_type}")
-async def draft_alert(zone_id: str, issue_type: str):
-    """Draft a field team alert for a zone and issue type"""
-    try:
-        response = await run_agent(
-            f"Draft a field team alert for {issue_type} in zone {zone_id}"
-        )
-        return {"zone_id": zone_id, "issue_type": issue_type, "alert": response}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@app.post("/api/chat")
+async def chat(payload: ChatRequest) -> dict:
+    """Process a chat message."""
+    return chat_agent.run({"message": payload.message})

@@ -1,0 +1,9 @@
+# Copy to terraform.tfvars (gitignored) and fill in your own values, or set
+# the equivalent TF_VAR_* environment variables instead of using a file at all:
+#   export TF_VAR_project_id="your-project-id"
+
+project_id   = "your-gcp-project-id"
+region       = "asia-south1"
+service_name = "citypulse-health"
+repo_name    = "citypulse-health"
+github_repo  = "your-github-org/your-repo-name"
