@@ -128,7 +128,6 @@ via `.github/workflows/deploy.yml`. Every push/PR also runs the test suite.
    |---|---|
    | `GCP_WORKLOAD_IDENTITY_PROVIDER` | output of `workload_identity_provider` |
    | `GCP_SERVICE_ACCOUNT` | output of `deployer_service_account_email` |
-   | `OPENAI_API_KEY` | your OpenAI key (same value as in your local `.env`) |
 
 5. Push to `main`. The `deploy` job builds the image, pushes it to Artifact
    Registry, and runs `gcloud run deploy`. The job's last step prints the
@@ -136,7 +135,7 @@ via `.github/workflows/deploy.yml`. Every push/PR also runs the test suite.
 
 ### How credentials flow
 
-- Locally: copy `.env.example` to `.env` and fill in `OPENAI_API_KEY`. `app/config.py`
+- Locally: copy `.env.example` to `.env`. `app/config.py`
   loads it via `python-dotenv`, and `devops/docker-compose.yml` loads the same file via
   `env_file`. `.env` is gitignored and never committed.
 - In Terraform: account-specific values (project, region, names, GitHub repo) live only
