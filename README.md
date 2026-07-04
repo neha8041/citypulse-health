@@ -1,6 +1,6 @@
 # CityPulse Health
 
-CityPulse Health is an AI-powered public health briefing assistant for city officials. The project is scaffolded as a Python application with a modular, agent-based architecture for the hackathon demo.
+CityPulse Health is an AI-powered public health briefing assistant for city officials. The project is scaffolded as a Python application with a modular, agent-based architecture.
 
 ## Project Structure
 
@@ -74,7 +74,7 @@ docker compose -f devops/docker-compose.yml up --build
 ## Notes
 
 - The current version uses sample data and placeholder agent logic.
-- The coordinating agent is the main entry point for the hackathon flow.
+- The coordinating agent is the main entry point for the workflow.
 - The app can later be extended with real city datasets and an LLM-backed response layer.
 
 ## Deployment (Google Cloud Run)

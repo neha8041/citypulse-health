@@ -17,8 +17,7 @@ export const metadata: Metadata = {
     "Google Cloud",
     "Vertex AI",
     "BigQuery",
-    "Public Health",
-    "Hackathon"
+    "Public Health"
   ],
   robots: {
     index: false,

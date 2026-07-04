@@ -11,16 +11,19 @@ class MorningBriefingWorkflow:
         self.coordinator = CoordinatingAgent()
 
     def generate_briefing(self) -> dict:
-        context = self.data_loader.load_sample_data()
-        result = self.coordinator.run(context)
-
         # Dynamically fetches the freshest live data from BigQuery
         try:
+            context = self.data_loader.load_sample_data()
+            result = self.coordinator.run(context)
             live_summary = get_city_summary()
             live_anomalies = get_anomalies()
-        except Exception:
-            # Fallback wrapper to make sure hackathon dashboard doesn't
-            # hard-crash if the database connection drops during presentation
+        except Exception as e:
+            import logging
+            logging.error("Failed to fetch live data: %s", e)
+            # Fallback wrapper to make sure dashboard doesn't
+            # hard-crash if the database connection drops
+            context = {"zone": "Fallback Zone", "risk_level": "medium", "clinic_load": 0.0}
+            result = self.coordinator.run(context)
             live_summary = {
                 "date": "System Live",
                 "total_zones_monitored": 12,

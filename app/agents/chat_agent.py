@@ -8,7 +8,7 @@ class ChatAgent(BaseAgent):
     """Answers free-form chat questions from the UI.
 
     Backed by the placeholder LLMClient for now — swap LLMClient.generate()
-    for a real model call once the hackathon demo needs real answers.
+    for a real model call.
     """
 
     name = "chat-agent"

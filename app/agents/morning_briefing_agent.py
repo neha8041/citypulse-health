@@ -9,15 +9,35 @@ class MorningBriefingAgent(BaseAgent):
     name = "morning-briefing-agent"
 
     def run(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        zone = context.get("zone", "Unknown Zone")
-        risk_level = context.get("risk_level", "medium")
-        clinic_load = context.get("clinic_load", 0.0)
+        # Handle fallback mock format
+        if "zone" in context:
+            zone = context.get("zone", "Unknown Zone")
+            risk_level = context.get("risk_level", "medium")
+            clinic_load = context.get("clinic_load", 0.0)
+            return {
+                "summary": (
+                    f"Overnight, {zone} showed a {risk_level} health risk. "
+                    f"Clinic utilization is at {clinic_load:.0%}, which warrants attention."
+                ),
+                "risk_area": zone,
+                "risk_level": risk_level,
+            }
 
+        # Parse real city_summary BigQuery format
+        highest_risk = context.get("highest_outbreak_probability", "Unknown")
+        complaints = context.get("complaint_volume_change", "Unknown")
+        maternal = context.get("maternal_appointment_change", "Unknown")
+        
         return {
             "summary": (
-                f"Overnight, {zone} showed a {risk_level} health risk. "
-                f"Clinic utilization is at {clinic_load:.0%}, which warrants attention."
+                f"Overnight, city-wide health signals were processed. "
+                f"The highest outbreak probability detected is {highest_risk}, "
+                f"with complaint volumes changing by {complaints}. "
+                f"Maternal appointments showed a change of {maternal}. "
+                f"Remediation protocols are advised."
             ),
-            "risk_area": zone,
-            "risk_level": risk_level,
+            "risk_area": "City-Wide",
+            "risk_level": "High" if any(
+                str(i) in highest_risk for i in (7, 8, 9)
+            ) else "Medium",
         }
