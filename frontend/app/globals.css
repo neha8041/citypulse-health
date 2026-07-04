@@ -67,6 +67,62 @@
   --transition: .18s ease;
 }
 
+.dark-theme {
+  /* Backgrounds */
+  --background: #0B1121;
+  --surface: #131B2F;
+  --surface-hover: #1A243D;
+
+  /* Brand */
+  --primary: #3B82F6;
+  --primary-hover: #60A5FA;
+  --primary-light: rgba(59, 130, 246, 0.2);
+
+  --secondary: #6366F1;
+  --secondary-light: rgba(99, 102, 241, 0.2);
+
+  /* Sidebar */
+  --sidebar: #0F172A;
+  --sidebar-hover: #1E293B;
+  --sidebar-active: #334155;
+  --sidebar-text: #F1F5F9;
+
+  /* Typography */
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+
+  /* Borders */
+  --border: #1E293B;
+
+  /* Status */
+  --success: #10B981;
+  --success-bg: rgba(16, 185, 129, 0.15);
+
+  --warning: #F59E0B;
+  --warning-bg: rgba(245, 158, 11, 0.15);
+
+  --danger: #EF4444;
+  --danger-bg: rgba(239, 68, 68, 0.15);
+
+  --info: #3B82F6;
+  --info-bg: rgba(59, 130, 246, 0.15);
+
+  /* Card backgrounds */
+  --brief-bg: rgba(59, 130, 246, 0.05);
+  --ai-bg: rgba(99, 102, 241, 0.05);
+  --community-bg: rgba(16, 185, 129, 0.05);
+  --resource-bg: #131B2F;
+  
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,0.6);
+
+  /* Map */
+  --map-empty: rgba(255, 255, 255, 0.05);
+  --map-dim: rgba(255, 255, 255, 0.02);
+}
+
 /* ==========================================================
    Reset
    ========================================================== */
@@ -174,18 +230,13 @@ a{
 
 }
 
-.dashboard-grid{
-
-  display:grid;
-
-  grid-template-columns:
-
-      310px
-      1fr
-      360px;
-
-  gap:24px;
-
+.dashboard-grid {
+  display: flex;
+  gap: 24px;
+  max-width: 1650px;
+  margin: auto;
+  padding: 30px;
+  min-height: 100vh;
 }
 
 /* ==========================================================
@@ -357,17 +408,13 @@ a{
 }
 
 .btn-secondary{
-
-  background:white;
-
+  background:var(--surface);
+  color:var(--text-primary);
   border:1px solid var(--border);
-
 }
 
 .btn-secondary:hover{
-
-  background:#F8FAFC;
-
+  background:var(--surface-hover);
 }
 
 /* ==========================================================
@@ -633,3 +680,31 @@ border-radius:18px;
 }
 
 }
+/* ==========================================================
+   Animations
+   ========================================================== */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+
+/* Animations */
+@keyframes pulse-danger {
+  0% {
+    filter: drop-shadow(0 0 0 rgba(239, 68, 68, 0.8));
+  }
+  70% {
+    filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0));
+  }
+  100% {
+    filter: drop-shadow(0 0 0 rgba(239, 68, 68, 0));
+  }
+}
+.pulse-danger {
+  animation: pulse-danger 2s infinite;
+}
+

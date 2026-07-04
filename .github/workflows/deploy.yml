@@ -79,6 +79,7 @@ jobs:
             --region "$REGION" \
             --platform managed \
             --allow-unauthenticated \
+            --service-account "citypulse-health-run@${PROJECT_ID}.iam.gserviceaccount.com" \
             --update-env-vars "APP_ENV=${APP_ENV:-production}"
 
       - name: Print deployed URL
@@ -181,8 +182,9 @@ jobs:
             
             - **Frontend URL**: ${{ needs.deploy-frontend.outputs.frontend_url }}
             - **Backend URL**: ${{ needs.deploy.outputs.backend_url }}
+
+            ${{ steps.tag_version.outputs.changelog }}
           draft: false
           prerelease: false
-          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

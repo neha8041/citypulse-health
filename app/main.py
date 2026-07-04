@@ -30,12 +30,12 @@ async def health() -> dict:
 
 
 @app.get("/api/briefing")
-async def get_briefing() -> dict:
+def get_briefing() -> dict:
     """Generate the morning briefing."""
     return workflow.generate_briefing()
 
 
 @app.post("/api/chat")
-async def chat(payload: ChatRequest) -> dict:
+def chat(payload: ChatRequest) -> dict:
     """Process a chat message."""
     return chat_agent.run({"message": payload.message})

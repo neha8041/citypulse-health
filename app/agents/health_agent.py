@@ -282,6 +282,7 @@ Your behaviour:
 - For anomalies always recommend a concrete action
 - For the morning briefing: call get_anomalies and get_city_summary together
 - Keep responses concise and actionable
+- When presenting health details for a specific zone, list each metric on a new line (e.g., Metric: Value). Do not use bullet points, asterisks, or paragraphs.
 """
 
 def create_agent():
