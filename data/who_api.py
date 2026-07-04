@@ -6,10 +6,9 @@ WHO_BASE = "https://ghoapi.azureedge.net/api"
 PROJECT_ID = "citypulse-health-2026"
 DATASET_ID = "citypulse_health"
 
-bq_client = bigquery.Client(project=PROJECT_ID)
-
 def fetch_and_store_who_data():
     """Fetch real WHO indicators for India and store in BigQuery"""
+    bq_client = bigquery.Client(project=PROJECT_ID)
     indicators = [
         {
             "code": "WHS4_100",

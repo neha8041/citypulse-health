@@ -6,8 +6,6 @@ from who_api import fetch_and_store_who_data
 PROJECT_ID = "citypulse-health-2026"
 DATASET_ID = "citypulse_health"
 
-client = bigquery.Client(project=PROJECT_ID)
-
 ZONES = [
     {"zone_id": "Z01", "zone_name": "Zone 1 - North"},
     {"zone_id": "Z02", "zone_name": "Zone 2 - North East"},
@@ -100,6 +98,7 @@ def generate_city_summary(disease_rows):
     }]
 
 def insert_rows(table_id, rows):
+    client = bigquery.Client(project=PROJECT_ID)
     table_ref = f"{PROJECT_ID}.{DATASET_ID}.{table_id}"
     errors = client.insert_rows_json(table_ref, rows)
     if errors:
