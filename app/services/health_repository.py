@@ -1,5 +1,5 @@
 import asyncio
-from typing import Dict, Any
+from typing import Dict, Any, List
 from google.cloud import bigquery
 
 from app.core.config import PROJECT_ID, DATASET_ID, logger
@@ -49,7 +49,7 @@ class HealthRepository:
         )
 
         def run_query():
-            logger.info(f"Executing get_zone_health_status for {zone_id}")
+            logger.info("Executing get_zone_health_status for %s", zone_id)
             return list(self.bq_client.query(query, job_config=job_config).result())
 
         results = await asyncio.to_thread(run_query)
@@ -98,7 +98,7 @@ class HealthRepository:
         """
         def run_query():
             return list(self.bq_client.query(query).result())
-            
+
         results = await asyncio.to_thread(run_query)
         zones = []
         for row in results:
@@ -113,7 +113,7 @@ class HealthRepository:
             })
         return {"total_zones": len(zones), "zones": zones}
 
-    async def get_anomalies(self) -> Dict[str, Any]:
+    async def get_anomalies(self, risk_threshold: float = 0.65) -> List[Dict[str, Any]]:
         """Detect and return all current health anomalies across the city."""
         query = f"""
             WITH latest_disease AS (
@@ -139,19 +139,24 @@ class HealthRepository:
                 c.wait_time_minutes
             FROM latest_disease d
             JOIN latest_clinic c ON d.zone_id = c.zone_id
-            WHERE d.dengue_risk_score > 0.65
+            WHERE d.dengue_risk_score > @risk_threshold
                OR c.utilization_rate > 0.88
                OR d.maternal_appointments < 25
             ORDER BY d.dengue_risk_score DESC
         """
+        job_config = bigquery.QueryJobConfig(
+            query_parameters=[
+                bigquery.ScalarQueryParameter("risk_threshold", "FLOAT64", risk_threshold)
+            ]
+        )
         def run_query():
-            return list(self.bq_client.query(query).result())
-            
+            return list(self.bq_client.query(query, job_config=job_config).result())
+
         results = await asyncio.to_thread(run_query)
         anomalies = []
         for row in results:
             r = dict(row)
-            if r["dengue_risk_score"] > 0.65:
+            if r["dengue_risk_score"] > risk_threshold:
                 anomalies.append({
                     "type": "DENGUE_RISK",
                     "zone": r["zone_name"],
@@ -185,7 +190,7 @@ class HealthRepository:
         """
         def run_query():
             return list(self.bq_client.query(query).result())
-            
+
         results = await asyncio.to_thread(run_query)
         rows = [dict(row) for row in results]
         if not rows:

@@ -18,7 +18,7 @@ async def fetch_indicator(
     query_params = "?$filter=SpatialDim eq 'IND'&$orderby=TimeDim desc&$top=1"
     url = f"{WHO_BASE}/{indicator['code']}{query_params}"
 
-    logger.info(f"Fetching WHO data: {indicator['name']}...")
+    logger.info("Fetching WHO data: %s...", indicator["name"])
     try:
         response = await client.get(url, timeout=10.0)
         response.raise_for_status()
@@ -30,7 +30,7 @@ async def fetch_indicator(
             year = latest.get("TimeDim")
 
             if value is not None:
-                logger.info(f"  Got: {value} ({year}) for {indicator['code']}")
+                logger.info("  Got: %s (%s) for %s", value, year, indicator["code"])
                 return {
                     "indicator_code": indicator["code"],
                     "indicator_name": indicator["name"],
@@ -40,11 +40,11 @@ async def fetch_indicator(
                     "unit": indicator["unit"],
                     "recorded_at": now,
                 }
-            logger.warning(f"  No value found for {indicator['code']}")
+            logger.warning("  No value found for %s", indicator["code"])
         else:
-            logger.warning(f"  No data returned for {indicator['code']}")
+            logger.warning("  No data returned for %s", indicator["code"])
     except Exception as e:
-        logger.error(f"  Error fetching {indicator['code']}: {e}")
+        logger.error("  Error fetching %s: %s", indicator["code"], e)
 
     return None
 
@@ -55,7 +55,8 @@ async def fetch_all_indicators() -> List[Dict[str, Any]]:
         {"code": "WHS4_100", "name": "DTP3 immunization coverage", "unit": "thousands"},
         {"code": "MALARIA_EST_DEATHS", "name": "Malaria estimated deaths", "unit": "count"},
         {"code": "MDG_0000000026", "name": "Neonatal mortality rate", "unit": "rate"},
-        {"code": "NUTRITION_ANAEMIA_PREGNANT_NUM", "name": "Pregnant women with anaemia", "unit": "thousands"},
+        {"code": "NUTRITION_ANAEMIA_PREGNANT_NUM",
+         "name": "Pregnant women with anaemia", "unit": "thousands"},
     ]
     now = datetime.utcnow().isoformat()
 
@@ -76,9 +77,9 @@ def fetch_and_store_who_data() -> Dict[str, float]:
             f"{PROJECT_ID}.{DATASET_ID}.who_indicators", rows
         )
         if errors:
-            logger.error(f"BigQuery insert errors: {errors}")
+            logger.error("BigQuery insert errors: %s", errors)
         else:
-            logger.info(f"Stored {len(rows)} WHO indicators in BigQuery")
+            logger.info("Stored %d WHO indicators in BigQuery", len(rows))
 
     result = {r["indicator_code"]: r["value"] for r in rows}
     return result
@@ -89,4 +90,4 @@ if __name__ == "__main__":
     logger.info("WHO Data Fetch and Store (Async)")
     logger.info("=" * 50)
     fetched_data = fetch_and_store_who_data()
-    logger.info(f"Final Data: {fetched_data}")
+    logger.info("Final Data: %s", fetched_data)

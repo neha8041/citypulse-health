@@ -19,11 +19,11 @@ class AsyncTTLCache:
         if key in self._cache:
             entry = self._cache[key]
             if now - entry["timestamp"] < self.ttl:
-                logger.info(f"Cache hit for key: {key}")
+                logger.info("Cache hit for key: %s", key)
                 return entry["value"]
-            logger.info(f"Cache expired for key: {key}")
+            logger.info("Cache expired for key: %s", key)
         else:
-            logger.info(f"Cache miss for key: {key}")
+            logger.info("Cache miss for key: %s", key)
 
         value = await func(*args, **kwargs)
 

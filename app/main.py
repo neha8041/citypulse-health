@@ -19,19 +19,22 @@ STATIC_DIR = Path(__file__).parent / "static"
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
     start_time = time.time()
-    logger.info(f"Received request: {request.method} {request.url.path}")
+    logger.info("Received request: %s %s", request.method, request.url.path)
     response = await call_next(request)
     process_time = time.time() - start_time
     logger.info(
-        f"Completed {request.method} {request.url.path} in {process_time:.3f}s "
-        f"with status {response.status_code}"
+        "Completed %s %s in %.3fs with status %s",
+        request.method,
+        request.url.path,
+        process_time,
+        response.status_code,
     )
     return response
 
 
 @app.exception_handler(CityPulseError)
-async def citypulse_exception_handler(request: Request, exc: CityPulseError):
-    logger.error(f"CityPulseError: {exc}")
+async def citypulse_exception_handler(_request: Request, exc: CityPulseError):
+    logger.error("CityPulseError: %s", exc)
     return JSONResponse(
         status_code=500,
         content={"message": "An internal error occurred during agent execution."},
@@ -39,8 +42,8 @@ async def citypulse_exception_handler(request: Request, exc: CityPulseError):
 
 
 @app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    logger.exception(f"Unhandled Exception: {exc}")
+async def global_exception_handler(_request: Request, exc: Exception):
+    logger.exception("Unhandled Exception: %s", exc)
     return JSONResponse(
         status_code=500,
         content={"message": "An unexpected error occurred."},
@@ -75,7 +78,7 @@ async def get_briefing() -> BriefingResponse:
 @app.post("/chat", response_model=ChatResponse)
 async def chat(payload: ChatRequest) -> ChatResponse:
     """Process a chat message using the ADK agent."""
-    logger.info(f"Processing chat message of length {len(payload.message)}")
+    logger.info("Processing chat message of length %d", len(payload.message))
     try:
         reply = await run_agent(payload.message)
         return ChatResponse(reply=reply)

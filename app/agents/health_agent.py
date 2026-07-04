@@ -12,13 +12,14 @@ os.environ["GOOGLE_CLOUD_PROJECT"] = PROJECT_ID
 os.environ["GOOGLE_CLOUD_LOCATION"] = LOCATION
 os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "TRUE"
 
-_repo = None
+_REPO = None
 
 def get_repo() -> HealthRepository:
-    global _repo
-    if _repo is None:
-        _repo = HealthRepository()
-    return _repo
+    # pylint: disable=global-statement
+    global _REPO
+    if _REPO is None:
+        _REPO = HealthRepository()
+    return _REPO
 
 # ─────────────────────────────────────────────
 # TOOLS — functions the agent can call
@@ -27,7 +28,7 @@ def get_repo() -> HealthRepository:
 async def get_zone_health_status(zone_id: str) -> dict:
     """Get the latest health status for a specific zone including
     dengue risk, clinic utilization and maternal care data."""
-    logger.info(f"Agent executing tool: get_zone_health_status({zone_id})")
+    logger.info("Agent executing tool: get_zone_health_status(%s)", zone_id)
     return await get_repo().get_zone_health_status(zone_id)
 
 async def get_all_zones_summary() -> list:
@@ -39,7 +40,7 @@ async def get_all_zones_summary() -> list:
 async def get_anomalies(risk_threshold: float = 0.7) -> list:
     """Get all zones where the dengue risk score is above the given threshold.
     Default threshold is 0.70."""
-    logger.info(f"Agent executing tool: get_anomalies(threshold={risk_threshold})")
+    logger.info("Agent executing tool: get_anomalies(threshold=%s)", risk_threshold)
     return await get_repo().get_anomalies(risk_threshold)
 
 async def get_city_summary() -> dict:
@@ -51,7 +52,10 @@ async def get_city_summary() -> dict:
 async def draft_field_alert(zone_id: str, issue_type: str) -> dict:
     """Draft a field team alert for a specific zone and issue type.
     issue_type can be DENGUE_RISK, CLINIC_OVERLOAD, or MATERNAL_CARE_DROP."""
-    logger.info(f"Agent executing tool: draft_field_alert(zone_id={zone_id}, issue_type={issue_type})")
+    logger.info(
+        "Agent executing tool: draft_field_alert(zone_id=%s, issue_type=%s)",
+        zone_id, issue_type
+    )
     zone_status = await get_zone_health_status(zone_id)
     if "error" in zone_status:
         return zone_status
@@ -150,7 +154,7 @@ def create_agent():
 
 async def run_agent(user_message: str):
     """Run the agent with a user message and return the response"""
-    logger.info(f"Starting agent session for message: '{user_message}'")
+    logger.info("Starting agent session for message: '%s'", user_message)
 
     session_service = InMemorySessionService()
     agent = create_agent()

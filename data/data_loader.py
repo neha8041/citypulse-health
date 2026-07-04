@@ -102,9 +102,9 @@ def insert_rows(table_id: str, rows: List[Dict[str, Any]]) -> None:
     table_ref = f"{PROJECT_ID}.{DATASET_ID}.{table_id}"
     errors = client.insert_rows_json(table_ref, rows)
     if errors:
-        logger.error(f"Errors inserting into {table_id}: {errors}")
+        logger.error("Errors inserting into %s: %s", table_id, errors)
     else:
-        logger.info(f"Inserted {len(rows)} rows into {table_id}")
+        logger.info("Inserted %d rows into %s", len(rows), table_id)
 
 def run():
     logger.info("=" * 50)
@@ -113,7 +113,7 @@ def run():
 
     who_data = fetch_and_store_who_data()
     base_vaccination = who_data.get("WHS4_100", 85.0) / 100.0
-    logger.info(f"Using WHO vaccination coverage: {base_vaccination*100}%")
+    logger.info("Using WHO vaccination coverage: %s%%", base_vaccination*100)
     clinic_rows = generate_clinic_metrics()
     disease_rows = generate_disease_signals(base_vaccination)
     summary_rows = generate_city_summary(disease_rows)
