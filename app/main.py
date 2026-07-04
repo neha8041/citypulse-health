@@ -30,7 +30,7 @@ async def health() -> dict:
 
 
 @app.get("/api/briefing")
-async def get_briefing() -> dict:
+def get_briefing() -> dict:
     """Generate the morning briefing."""
     return workflow.generate_briefing()
 

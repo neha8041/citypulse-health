@@ -687,6 +687,10 @@ border-radius:18px;
   to { transform: rotate(360deg); }
 }
 
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
 
 /* Animations */
 @keyframes pulse-danger {

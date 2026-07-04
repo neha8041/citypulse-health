@@ -1,3 +1,4 @@
+import re
 from typing import Any, Dict
 
 from app.agents.base_agent import BaseAgent
@@ -28,6 +29,12 @@ class MorningBriefingAgent(BaseAgent):
         complaints = context.get("complaint_volume_change", "Unknown")
         maternal = context.get("maternal_appointment_change", "Unknown")
 
+        try:
+            match = re.search(r"(\d+(?:\.\d+)?)", highest_risk)
+            risk_val = float(match.group(1)) if match else 0
+        except Exception:
+            risk_val = 0
+
         return {
             "summary": (
                 f"Overnight, city-wide health signals were processed. "
@@ -37,7 +44,5 @@ class MorningBriefingAgent(BaseAgent):
                 f"Remediation protocols are advised."
             ),
             "risk_area": "City-Wide",
-            "risk_level": "High" if any(
-                str(i) in highest_risk for i in (7, 8, 9)
-            ) else "Medium",
+            "risk_level": "High" if risk_val >= 70 else "Medium",
         }

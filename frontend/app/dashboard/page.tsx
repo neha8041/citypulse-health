@@ -93,7 +93,8 @@ export default function DashboardPage() {
   const [theme, setTheme] = useState<string>("dark-theme");
 
   useEffect(() => {
-    document.documentElement.className = theme;
+    document.documentElement.classList.remove("light-theme", "dark-theme");
+    document.documentElement.classList.add(theme);
   }, [theme]);
 
   // Auto-scroll chat down
@@ -117,10 +118,10 @@ export default function DashboardPage() {
         // Dynamically build trendline based on backend % change
         if (json.summary?.complaint_volume_change) {
           const changeStr = json.summary.complaint_volume_change;
-          const isPos = changeStr.includes("+");
-          const pct = parseInt(changeStr.replace(/\D/g, '')) || 0;
+          const match = changeStr.match(/([+-]?\d+)/);
+          const pct = match ? parseInt(match[1], 10) : 0;
           const start = 120;
-          const end = isPos ? start * (1 + pct/100) : start * (1 - pct/100);
+          const end = start * (1 + pct/100);
           
           setTrendData([
             { day: "Mon", complaints: start },
