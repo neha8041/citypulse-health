@@ -74,7 +74,6 @@ def fetch_and_store_who_data():
             print(f"BigQuery insert errors: {errors}")
         else:
             print(f"\nStored {len(rows)} WHO indicators in BigQuery")
-
     # Return as dict keyed by indicator code for easy lookup
     result = {}
     for r in rows:
