@@ -24,6 +24,8 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    outputs:
+      backend_url: ${{ steps.backend-url.outputs.url }}
     env:
       REGION: ${{ vars.GCP_REGION }}
       SERVICE_NAME: ${{ vars.GCP_SERVICE_NAME }}
@@ -66,6 +68,62 @@ jobs:
             --update-env-vars "^##^APP_ENV=${APP_ENV:-production}##MODEL_NAME=${MODEL_NAME:-gpt-4o-mini}##OPENAI_API_KEY=${OPENAI_API_KEY}"
 
       - name: Print deployed URL
+        id: backend-url
+        run: |
+          URL=$(gcloud run services describe "$SERVICE_NAME" \
+            --project "$PROJECT_ID" \
+            --region "$REGION" \
+            --format="value(status.url)")
+          echo "$URL"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+  deploy-frontend:
+    name: Build & Deploy Frontend to Cloud Run
+    needs: deploy
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      REGION: ${{ vars.GCP_REGION }}
+      SERVICE_NAME: ${{ vars.GCP_FRONTEND_SERVICE_NAME || 'citypulse-health-frontend' }}
+      REPO_NAME: ${{ vars.GCP_REPO_NAME }}
+      PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      BACKEND_URL: ${{ needs.deploy.outputs.backend_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
+
+      - name: Build and push frontend image
+        run: |
+          IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${SERVICE_NAME}:${GITHUB_SHA}"
+          docker build -f devops/Dockerfile.frontend -t "$IMAGE" frontend
+          docker push "$IMAGE"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+
+      - name: Deploy frontend to Cloud Run
+        run: |
+          gcloud run deploy "$SERVICE_NAME" \
+            --image "$IMAGE" \
+            --project "$PROJECT_ID" \
+            --region "$REGION" \
+            --platform managed \
+            --allow-unauthenticated \
+            --set-env-vars "NEXT_PUBLIC_BACKEND_URL=${BACKEND_URL}"
+
+      - name: Print deployed frontend URL
         run: |
           gcloud run services describe "$SERVICE_NAME" \
             --project "$PROJECT_ID" \
