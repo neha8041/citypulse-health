@@ -10,7 +10,11 @@ logger = logging.getLogger(__name__)
 PROJECT_ID = "citypulse-health-2026"
 DATASET_ID = "citypulse_health"
 
-client = bigquery.Client(project=PROJECT_ID)
+import functools
+
+@functools.lru_cache(maxsize=1)
+def _get_bq_client():
+    return bigquery.Client(project=PROJECT_ID)
 
 ZONES = [
     {"zone_id": "Z01", "zone_name": "Zone 1 - North"},
@@ -105,7 +109,7 @@ def generate_city_summary(disease_rows):
 
 def insert_rows(table_id, rows):
     table_ref = f"{PROJECT_ID}.{DATASET_ID}.{table_id}"
-    errors = client.insert_rows_json(table_ref, rows)
+    errors = _get_bq_client().insert_rows_json(table_ref, rows)
     if errors:
         logger.error("Errors inserting into %s: %s", table_id, errors)
     else:

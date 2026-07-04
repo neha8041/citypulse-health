@@ -33,7 +33,7 @@ jobs:
       - run: python -m unittest discover -s tests -p "test_*.py"
 
   deploy:
-    name: Build & Deploy to Cloud Run
+    name: Build & Deploy Backend to Cloud Run
     needs: [test, pylint]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -71,9 +71,6 @@ jobs:
           echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
 
       - name: Deploy to Cloud Run
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          MODEL_NAME: ${{ vars.MODEL_NAME }}
         run: |
           gcloud run deploy "$SERVICE_NAME" \
             --image "$IMAGE" \
@@ -81,7 +78,7 @@ jobs:
             --region "$REGION" \
             --platform managed \
             --allow-unauthenticated \
-            --update-env-vars "^##^APP_ENV=${APP_ENV:-production}##MODEL_NAME=${MODEL_NAME:-gpt-4o-mini}##OPENAI_API_KEY=${OPENAI_API_KEY}"
+            --update-env-vars "APP_ENV=${APP_ENV:-production}"
 
       - name: Print deployed URL
         id: backend-url

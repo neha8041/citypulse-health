@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 import requests
+import functools
 from google.cloud import bigquery
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
@@ -10,7 +11,9 @@ WHO_BASE = "https://ghoapi.azureedge.net/api"
 PROJECT_ID = "citypulse-health-2026"
 DATASET_ID = "citypulse_health"
 
-bq_client = bigquery.Client(project=PROJECT_ID)
+@functools.lru_cache(maxsize=1)
+def _get_bq_client():
+    return bigquery.Client(project=PROJECT_ID)
 
 def fetch_and_store_who_data():
     """Fetch real WHO indicators for India and store in BigQuery"""
@@ -70,7 +73,7 @@ def fetch_and_store_who_data():
             logger.error("  Error: %s", e)
 
     if rows:
-        errors = bq_client.insert_rows_json(
+        errors = _get_bq_client().insert_rows_json(
             f"{PROJECT_ID}.{DATASET_ID}.who_indicators",
             rows
         )
