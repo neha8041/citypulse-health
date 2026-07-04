@@ -15,6 +15,7 @@ STATIC_DIR = Path(__file__).parent / "static"
 
 
 class ChatRequest(BaseModel):
+    """Request model for chat messages."""
     message: str
 
 
@@ -30,10 +31,11 @@ async def health() -> dict:
 
 @app.get("/briefing")
 async def get_briefing() -> dict:
+    """Generate the morning briefing."""
     return workflow.generate_briefing()
 
 
 @app.post("/chat")
 async def chat(payload: ChatRequest) -> dict:
+    """Process a chat message."""
     return chat_agent.run({"message": payload.message})
-
