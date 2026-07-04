@@ -1,13 +1,33 @@
-from typing import Any, Dict
+"""
+Data Loader Service — wraps the CityPulse data pipeline.
+Real data loading is handled by data/data_loader.py which:
+- Fetches real WHO indicators and stores in BigQuery
+- Generates synthetic clinic metrics per zone
+- Populates disease_signals and city_summary tables
+"""
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../data'))
 
+from data_loader import run as run_data_load
+from who_api import fetch_and_store_who_data
+from app.agents.health_agent import get_anomalies, get_city_summary, get_all_zones_summary
 
 class DataLoader:
-    """Placeholder data loader for city health datasets."""
+    """Real data loader connecting to BigQuery and WHO API"""
 
-    def load_sample_data(self) -> Dict[str, Any]:
-        return {
-            "zone": "Zone 7",
-            "risk_level": "high",
-            "clinic_load": 0.92,
-            "maternal_care_drop": 0.18,
-        }
+    def load_sample_data(self):
+        """Returns latest city summary from BigQuery"""
+        return get_city_summary()
+
+    def load_all_zones(self):
+        """Returns all zone health data from BigQuery"""
+        return get_all_zones_summary()
+
+    def load_anomalies(self):
+        """Returns current anomalies from BigQuery"""
+        return get_anomalies()
+
+    def run_full_pipeline(self):
+        """Runs the complete data ingestion pipeline"""
+        run_data_load()
