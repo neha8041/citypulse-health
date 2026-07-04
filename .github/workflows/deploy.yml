@@ -109,7 +109,9 @@ jobs:
       - name: Build and push frontend image
         run: |
           IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${SERVICE_NAME}:${GITHUB_SHA}"
-          docker build -f devops/Dockerfile.frontend -t "$IMAGE" frontend
+          docker build -f devops/Dockerfile.frontend \
+            --build-arg NEXT_PUBLIC_BACKEND_URL="${BACKEND_URL}" \
+            -t "$IMAGE" frontend
           docker push "$IMAGE"
           echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
 
