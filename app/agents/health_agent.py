@@ -3,198 +3,56 @@ from google.adk.agents import Agent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
-from google.cloud import bigquery
+from app.services.health_repository import HealthRepository
+from app.core.config import logger, PROJECT_ID, MODEL_NAME
 
-PROJECT_ID = "citypulse-health-2026"
-DATASET_ID = "citypulse_health"
 LOCATION = "us-central1"
 
 os.environ["GOOGLE_CLOUD_PROJECT"] = PROJECT_ID
 os.environ["GOOGLE_CLOUD_LOCATION"] = LOCATION
 os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "TRUE"
 
-bq_client = bigquery.Client(project=PROJECT_ID)
+_repo = None
+
+def get_repo() -> HealthRepository:
+    global _repo
+    if _repo is None:
+        _repo = HealthRepository()
+    return _repo
 
 # ─────────────────────────────────────────────
 # TOOLS — functions the agent can call
 # ─────────────────────────────────────────────
 
-def get_zone_health_status(zone_id: str) -> dict:
+async def get_zone_health_status(zone_id: str) -> dict:
     """Get the latest health status for a specific zone including
     dengue risk, clinic utilization and maternal care data."""
-    query = f"""
-        WITH latest_disease AS (
-            SELECT * FROM (
-                SELECT *, ROW_NUMBER() OVER (PARTITION BY zone_id ORDER BY recorded_at DESC) as rn
-                FROM `{PROJECT_ID}.{DATASET_ID}.disease_signals`
-            ) WHERE rn = 1
-        ),
-        latest_clinic AS (
-            SELECT * FROM (
-                SELECT *, ROW_NUMBER() OVER (PARTITION BY zone_id ORDER BY recorded_at DESC) as rn
-                FROM `{PROJECT_ID}.{DATASET_ID}.clinic_metrics`
-            ) WHERE rn = 1
-        )
-        SELECT
-            d.zone_id,
-            d.zone_name,
-            d.dengue_risk_score,
-            d.complaint_count,
-            d.maternal_appointments,
-            d.aqi,
-            d.vaccination_coverage,
-            c.utilization_rate,
-            c.wait_time_minutes,
-            c.total_beds,
-            c.bed_occupancy
-        FROM latest_disease d
-        JOIN latest_clinic c ON d.zone_id = c.zone_id
-        WHERE d.zone_id = '{zone_id}'
-    """
-    results = bq_client.query(query).result()
-    rows = [dict(row) for row in results]
-    if not rows:
-        return {"error": f"Zone {zone_id} not found"}
-    r = rows[0]
-    return {
-        "zone_id": r["zone_id"],
-        "zone_name": r["zone_name"],
-        "dengue_outbreak_probability": f"{int(r['dengue_risk_score']*100)}%",
-        "citizen_complaints_this_week": r["complaint_count"],
-        "aqi": r["aqi"],
-        "vaccination_coverage": f"{int(r['vaccination_coverage']*100)}%",
-        "clinic_utilization": f"{int(r['utilization_rate']*100)}%",
-        "wait_time_minutes": r["wait_time_minutes"],
-        "beds_occupied": f"{r['bed_occupancy']} of {r['total_beds']}",
-        "maternal_appointments_this_week": r["maternal_appointments"]
-    }
+    logger.info(f"Agent executing tool: get_zone_health_status({zone_id})")
+    return await get_repo().get_zone_health_status(zone_id)
 
-def get_all_zones_summary() -> dict:
-    """Get a summary of all 12 zones ranked by risk level."""
-    query = f"""
-        WITH latest_disease AS (
-            SELECT * FROM (
-                SELECT *, ROW_NUMBER() OVER (PARTITION BY zone_id ORDER BY recorded_at DESC) as rn
-                FROM `{PROJECT_ID}.{DATASET_ID}.disease_signals`
-            ) WHERE rn = 1
-        ),
-        latest_clinic AS (
-            SELECT * FROM (
-                SELECT *, ROW_NUMBER() OVER (PARTITION BY zone_id ORDER BY recorded_at DESC) as rn
-                FROM `{PROJECT_ID}.{DATASET_ID}.clinic_metrics`
-            ) WHERE rn = 1
-        )
-        SELECT
-            d.zone_id,
-            d.zone_name,
-            d.dengue_risk_score,
-            d.complaint_count,
-            c.utilization_rate,
-            d.maternal_appointments
-        FROM latest_disease d
-        JOIN latest_clinic c ON d.zone_id = c.zone_id
-        ORDER BY d.dengue_risk_score DESC
-    """
-    results = bq_client.query(query).result()
-    zones = []
-    for row in results:
-        r = dict(row)
-        zones.append({
-            "zone_id": r["zone_id"],
-            "zone_name": r["zone_name"],
-            "dengue_risk": f"{int(r['dengue_risk_score']*100)}%",
-            "complaints": r["complaint_count"],
-            "clinic_utilization": f"{int(r['utilization_rate']*100)}%",
-            "maternal_appointments": r["maternal_appointments"]
-        })
-    return {"total_zones": len(zones), "zones": zones}
+async def get_all_zones_summary() -> list:
+    """Get a summary of all zones ranked by risk level. 
+    Use this to identify which zones need the most urgent attention."""
+    logger.info("Agent executing tool: get_all_zones_summary")
+    return await get_repo().get_all_zones_summary()
 
-def get_anomalies() -> dict:
-    """Detect and return all current health anomalies across the city."""
-    query = f"""
-        WITH latest_disease AS (
-            SELECT * FROM (
-                SELECT *, ROW_NUMBER() OVER (PARTITION BY zone_id ORDER BY recorded_at DESC) as rn
-                FROM `{PROJECT_ID}.{DATASET_ID}.disease_signals`
-            ) WHERE rn = 1
-        ),
-        latest_clinic AS (
-            SELECT * FROM (
-                SELECT *, ROW_NUMBER() OVER (PARTITION BY zone_id ORDER BY recorded_at DESC) as rn
-                FROM `{PROJECT_ID}.{DATASET_ID}.clinic_metrics`
-            ) WHERE rn = 1
-        )
-        SELECT
-            d.zone_id,
-            d.zone_name,
-            d.dengue_risk_score,
-            d.complaint_count,
-            d.maternal_appointments,
-            d.aqi,
-            c.utilization_rate,
-            c.wait_time_minutes
-        FROM latest_disease d
-        JOIN latest_clinic c ON d.zone_id = c.zone_id
-        WHERE d.dengue_risk_score > 0.65
-           OR c.utilization_rate > 0.88
-           OR d.maternal_appointments < 25
-        ORDER BY d.dengue_risk_score DESC
-    """
-    results = bq_client.query(query).result()
-    anomalies = []
-    for row in results:
-        r = dict(row)
-        if r["dengue_risk_score"] > 0.65:
-            anomalies.append({
-                "type": "DENGUE_RISK",
-                "zone": r["zone_name"],
-                "dengue_outbreak_probability": f"{int(r['dengue_risk_score']*100)}%",
-                "complaints": r["complaint_count"],
-                "aqi": r["aqi"]
-            })
-        if r["utilization_rate"] > 0.88:
-            anomalies.append({
-                "type": "CLINIC_OVERLOAD",
-                "zone": r["zone_name"],
-                "utilization": f"{int(r['utilization_rate']*100)}%",
-                "wait_time_minutes": r["wait_time_minutes"]
-            })
-        if r["maternal_appointments"] < 25:
-            anomalies.append({
-                "type": "MATERNAL_CARE_DROP",
-                "zone": r["zone_name"],
-                "appointments_this_week": r["maternal_appointments"],
-                "drop_percentage": f"{int((1 - r['maternal_appointments']/55)*100)}%"
-            })
-    return {"anomaly_count": len(anomalies), "anomalies": anomalies}
+async def get_anomalies(risk_threshold: float = 0.7) -> list:
+    """Get all zones where the dengue risk score is above the given threshold.
+    Default threshold is 0.70."""
+    logger.info(f"Agent executing tool: get_anomalies(threshold={risk_threshold})")
+    return await get_repo().get_anomalies(risk_threshold)
 
-def get_city_summary() -> dict:
-    """Get the overall city health summary for today."""
-    query = f"""
-        SELECT *
-        FROM `{PROJECT_ID}.{DATASET_ID}.city_summary`
-        ORDER BY recorded_at DESC
-        LIMIT 1
-    """
-    results = bq_client.query(query).result()
-    rows = [dict(row) for row in results]
-    if not rows:
-        return {"error": "No city summary found"}
-    r = rows[0]
-    return {
-        "date": str(r["summary_date"]),
-        "total_zones_monitored": r["total_zones"],
-        "signals_processed_overnight": r["signals_processed"],
-        "highest_outbreak_probability": f"{int(r['outbreak_probability']*100)}%",
-        "complaint_volume_change": f"+{int(r['complaint_volume_change']*100)}%",
-        "maternal_appointment_change": f"{int(r['maternal_appointment_change']*100)}%",
-        "data_freshness": r["data_freshness_status"]
-    }
+async def get_city_summary() -> dict:
+    """Get the overall city health status including average risk
+    and total resources deployed."""
+    logger.info("Agent executing tool: get_city_summary")
+    return await get_repo().get_city_summary()
 
-def draft_field_alert(zone_id: str, issue_type: str) -> dict:
+async def draft_field_alert(zone_id: str, issue_type: str) -> dict:
     """Draft a field team alert for a specific zone and issue type.
     issue_type can be DENGUE_RISK, CLINIC_OVERLOAD, or MATERNAL_CARE_DROP."""
-    zone_status = get_zone_health_status(zone_id)
+    logger.info(f"Agent executing tool: draft_field_alert(zone_id={zone_id}, issue_type={issue_type})")
+    zone_status = await get_zone_health_status(zone_id)
     if "error" in zone_status:
         return zone_status
 
@@ -263,28 +121,21 @@ This is time-sensitive — maternal health outcomes depend on timely care.
 AGENT_INSTRUCTION = """
 You are CityPulse, an AI health intelligence agent for a city health official.
 You have access to real-time health data across 12 zones in the city.
+You are the CityPulse Health Coordinator Agent.
+You have access to real-time health signals from BigQuery across 12 city zones.
+Your job is to answer queries from health officials and draft field alerts.
 
-Your tools:
-- get_city_summary: get overall city health status
-- get_all_zones_summary: get all zones ranked by risk
-- get_zone_health_status: get detailed status for a specific zone
-- get_anomalies: detect all current health anomalies
-- draft_field_alert: draft an alert for field teams
-
-Your behaviour:
-- Always use tools to fetch real data before answering
-- Speak in plain English, not technical jargon
-- Use percentages not decimals (79% not 0.79)
-- Be specific — name zones, give numbers
-- For anomalies always recommend a concrete action
-- For the morning briefing: call get_anomalies and get_city_summary together
+Rules:
+- Always fetch the latest data before answering
+- If an anomaly is detected, proactively suggest actions
+- Maintain a professional, urgent tone for alerts
 - Keep responses concise and actionable
 """
 
 def create_agent():
     agent = Agent(
         name="citypulse_health_agent",
-        model="gemini-2.5-flash",
+        model=MODEL_NAME,
         description="City health intelligence agent for monitoring and decision support",
         instruction=AGENT_INSTRUCTION,
         tools=[
@@ -299,6 +150,7 @@ def create_agent():
 
 async def run_agent(user_message: str):
     """Run the agent with a user message and return the response"""
+    logger.info(f"Starting agent session for message: '{user_message}'")
 
     session_service = InMemorySessionService()
     agent = create_agent()
@@ -327,6 +179,7 @@ async def run_agent(user_message: str):
         if event.is_final_response():
             final_response = event.content.parts[0].text
 
+    logger.info("Agent session completed")
     return final_response
 
 if __name__ == "__main__":

@@ -154,7 +154,7 @@
   <div class="app">
     <header>
       <h1>CityPulse Health</h1>
-      <p>Agent-based public health briefing assistant — hackathon demo</p>
+      <p>AI-powered Decision Intelligence Platform for Public Health</p>
     </header>
 
     <div class="card briefing-bar">
@@ -170,7 +170,7 @@
       </form>
     </div>
 
-    <footer>Chat replies are a placeholder LLM response for now — swap in a real model when ready.</footer>
+    <footer>Powered by Google Agent Development Kit (ADK), Gemini, and BigQuery.</footer>
   </div>
 
 <script>
@@ -214,10 +214,7 @@
     try {
       const res = await fetch("/briefing");
       const data = await res.json();
-      addMessage(
-        `${data.morning_briefing}\n\n${data.explanation}\n\nActions:\n- ${data.actions.join("\n- ")}`,
-        "bot"
-      );
+      addMessage(data.briefing, "bot");
     } catch (err) {
       addMessage("Error fetching the briefing.", "bot");
     } finally {

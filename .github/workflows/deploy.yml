@@ -70,7 +70,6 @@ jobs:
 
       - name: Deploy to Cloud Run
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           MODEL_NAME: ${{ vars.MODEL_NAME }}
         run: |
           gcloud run deploy "$SERVICE_NAME" \
@@ -79,7 +78,8 @@ jobs:
             --region "$REGION" \
             --platform managed \
             --allow-unauthenticated \
-            --update-env-vars "^##^APP_ENV=${APP_ENV:-production}##MODEL_NAME=${MODEL_NAME:-gpt-4o-mini}##OPENAI_API_KEY=${OPENAI_API_KEY}"
+            --update-env-vars "APP_ENV=${APP_ENV:-production},MODEL_NAME=${MODEL_NAME:-gemini-2.0-flash}" \
+            --update-secrets "OPENAI_API_KEY=openai-api-key:latest"
 
       - name: Print deployed URL
         run: |

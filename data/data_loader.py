@@ -1,10 +1,9 @@
 import random
 from datetime import datetime, timedelta
+from typing import Dict, Any, List
 from google.cloud import bigquery
 from who_api import fetch_and_store_who_data
-
-PROJECT_ID = "citypulse-health-2026"
-DATASET_ID = "citypulse_health"
+from app.core.config import logger, PROJECT_ID, DATASET_ID
 
 client = bigquery.Client(project=PROJECT_ID)
 
@@ -23,7 +22,7 @@ ZONES = [
     {"zone_id": "Z12", "zone_name": "Zone 12 - Outer"},
 ]
 
-def generate_clinic_metrics():
+def generate_clinic_metrics() -> List[Dict[str, Any]]:
     rows = []
     now = datetime.utcnow()
     for zone in ZONES:
@@ -49,7 +48,7 @@ def generate_clinic_metrics():
         })
     return rows
 
-def generate_disease_signals(base_vaccination):
+def generate_disease_signals(base_vaccination: float) -> List[Dict[str, Any]]:
     rows = []
     now = datetime.utcnow()
     week_start = (now - timedelta(days=now.weekday())).date().isoformat()
@@ -85,7 +84,7 @@ def generate_disease_signals(base_vaccination):
         })
     return rows
 
-def generate_city_summary(disease_rows):
+def generate_city_summary(disease_rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     now = datetime.utcnow()
     max_outbreak = max(r["dengue_risk_score"] for r in disease_rows)
     return [{
@@ -99,22 +98,22 @@ def generate_city_summary(disease_rows):
         "recorded_at": now.isoformat()
     }]
 
-def insert_rows(table_id, rows):
+def insert_rows(table_id: str, rows: List[Dict[str, Any]]) -> None:
     table_ref = f"{PROJECT_ID}.{DATASET_ID}.{table_id}"
     errors = client.insert_rows_json(table_ref, rows)
     if errors:
-        print(f"Errors inserting into {table_id}: {errors}")
+        logger.error(f"Errors inserting into {table_id}: {errors}")
     else:
-        print(f"Inserted {len(rows)} rows into {table_id}")
+        logger.info(f"Inserted {len(rows)} rows into {table_id}")
 
 def run():
-    print("=" * 50)
-    print("CityPulse Health — Data Loader")
-    print("=" * 50)
+    logger.info("=" * 50)
+    logger.info("CityPulse Health — Data Loader")
+    logger.info("=" * 50)
 
     who_data = fetch_and_store_who_data()
     base_vaccination = who_data.get("WHS4_100", 85.0) / 100.0
-    print(f"Using WHO vaccination coverage: {base_vaccination*100}%")
+    logger.info(f"Using WHO vaccination coverage: {base_vaccination*100}%")
     clinic_rows = generate_clinic_metrics()
     disease_rows = generate_disease_signals(base_vaccination)
     summary_rows = generate_city_summary(disease_rows)
@@ -123,9 +122,9 @@ def run():
     insert_rows("disease_signals", disease_rows)
     insert_rows("city_summary", summary_rows)
 
-    print("=" * 50)
-    print("Done. BigQuery tables populated with real + synthetic data.")
-    print("=" * 50)
+    logger.info("=" * 50)
+    logger.info("Done. BigQuery tables populated with real + synthetic data.")
+    logger.info("=" * 50)
 
 if __name__ == "__main__":
     run()
