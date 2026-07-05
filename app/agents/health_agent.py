@@ -4,7 +4,7 @@ import logging
 from google.adk.agents import Agent
 from google.cloud import bigquery
 
-PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT", "cricketpulse-neural-uplink-77")
+PROJECT_ID = "citypulse-health-2026"
 DATASET_ID = os.environ.get("DATASET_ID", "citypulse_health")
 LOCATION = os.environ.get("GOOGLE_CLOUD_LOCATION", "us-central1")
 

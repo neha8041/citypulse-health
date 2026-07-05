@@ -509,31 +509,60 @@ export default function DashboardPage() {
       </main>
 
       {/* CHAT FAB TOGGLE */}
-      <button 
-        onClick={() => setIsChatOpen(!isChatOpen)}
+      <div
         style={{
           position: "fixed",
           bottom: "32px",
           right: "32px",
-          width: "64px",
-          height: "64px",
-          borderRadius: "50%",
-          padding: 0,
-          background: "var(--sidebar)",
-          border: "none",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
           zIndex: 101,
           display: "flex",
-          justifyContent: "center",
           alignItems: "center",
-          cursor: "pointer",
-          transition: "transform 0.2s ease"
+          gap: "16px"
         }}
-        onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.05)"}
-        onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
       >
-        {isChatOpen ? <X size={28} color="white" /> : <MessageCircle size={28} color="white" />}
-      </button>
+        <AnimatePresence>
+          {!isChatOpen && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.3 }}
+              className="chat-tooltip-glass pulse-bounce"
+            >
+              Ask CityPulse AI ✨
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        <button 
+          className={!isChatOpen ? "fab-highlight" : ""}
+          onClick={() => setIsChatOpen(!isChatOpen)}
+          style={{
+            width: "68px",
+            height: "68px",
+            borderRadius: "50%",
+            padding: 0,
+            background: "var(--sidebar)",
+            border: "none",
+            boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            cursor: "pointer",
+            transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.transform = "scale(1.1) rotate(5deg)";
+            e.currentTarget.style.boxShadow = "0 15px 35px rgba(37,99,235,0.4)";
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.transform = "scale(1) rotate(0deg)";
+            e.currentTarget.style.boxShadow = "0 10px 25px rgba(0,0,0,0.2)";
+          }}
+        >
+          {isChatOpen ? <X size={30} color="white" /> : <MessageCircle size={30} color="white" />}
+        </button>
+      </div>
 
       {/* CHAT DISPLAY AND SLIDING DRAWER CONTAINER */}
       <AnimatePresence>
