@@ -1,7 +1,9 @@
+import logging
+import traceback
 from pathlib import Path
 
-from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 
 from app.agents.chat_agent import ChatAgent
@@ -13,6 +15,21 @@ chat_agent = ChatAgent()
 
 STATIC_DIR = Path(__file__).parent / "static"
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+@app.exception_handler(Exception)
+async def global_exception_handler(_request: Request, exc: Exception):
+    logger.error("Unhandled exception: %s", exc)
+    logger.error(traceback.format_exc())
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": "Internal Server Error",
+            "error": str(exc),
+            "traceback": traceback.format_exc(),
+        }
+    )
 
 class ChatRequest(BaseModel):
     """Request model for chat messages."""
