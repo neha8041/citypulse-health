@@ -86,3 +86,25 @@ resource "google_service_account_iam_member" "wif_deployer_binding" {
   role                = "roles/iam.workloadIdentityUser"
   member              = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}/attribute.repository/${var.github_repo}"
 }
+
+
+# health_agent.py queries disease_signals/clinic_metrics/city_summary/who_indicators.
+resource "google_project_iam_member" "run_sa_bigquery_data" {
+  project = var.project_id
+  role    = "roles/bigquery.dataEditor"
+  member  = "serviceAccount:${google_service_account.run_sa.email}"
+}
+
+# Running a query (even read-only) requires creating a BigQuery job.
+resource "google_project_iam_member" "run_sa_bigquery_job" {
+  project = var.project_id
+  role    = "roles/bigquery.jobUser"
+  member  = "serviceAccount:${google_service_account.run_sa.email}"
+}
+
+# ChatAgent/LLMClient call Gemini 2.5 Flash via Vertex AI (ADK).
+resource "google_project_iam_member" "run_sa_vertex_ai" {
+  project = var.project_id
+  role    = "roles/aiplatform.user"
+  member  = "serviceAccount:${google_service_account.run_sa.email}"
+}
