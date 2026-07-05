@@ -79,7 +79,7 @@ jobs:
             --region "$REGION" \
             --platform managed \
             --allow-unauthenticated \
-            --service-account "citypulse-health-run@${PROJECT_ID}.iam.gserviceaccount.com" \
+            --service-account "citypulse-health-2026-run@${PROJECT_ID}.iam.gserviceaccount.com" \
             --update-env-vars "APP_ENV=${APP_ENV:-production}"
 
       - name: Print deployed URL
