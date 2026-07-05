@@ -13,6 +13,22 @@ chat_agent = ChatAgent()
 
 STATIC_DIR = Path(__file__).parent / "static"
 
+import logging
+import traceback
+from fastapi.responses import JSONResponse
+from fastapi import Request
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled exception: {exc}")
+    logger.error(traceback.format_exc())
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal Server Error", "error": str(exc), "traceback": traceback.format_exc()}
+    )
 
 class ChatRequest(BaseModel):
     """Request model for chat messages."""
