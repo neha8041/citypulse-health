@@ -190,6 +190,35 @@ def get_city_summary() -> dict:
         "data_freshness": r["data_freshness_status"]
     }
 
+def get_who_context() -> dict:
+    """Get real WHO health indicators for India as national benchmarks
+    to compare against zone-level metrics."""
+    query = f"""
+        SELECT indicator_name, value, unit, year
+        FROM `{PROJECT_ID}.{DATASET_ID}.who_indicators`
+        ORDER BY recorded_at DESC
+        LIMIT 10
+    """
+    try:
+        results = _get_bq_client().query(query).result()
+        rows = [dict(r) for r in results]
+        formatted = []
+        for r in rows:
+            formatted.append({
+                "indicator": r["indicator_name"],
+                "value": round(float(r["value"]), 2),
+                "unit": r["unit"],
+                "year": r["year"],
+                "source": "WHO Global Health Observatory"
+            })
+        return {
+            "country": "India",
+            "indicators": formatted,
+            "note": "Use these as national benchmarks when comparing zone-level metrics"
+        }
+    except Exception as e:  # pylint: disable=broad-except
+        return {"error": str(e)}
+
 def draft_field_alert(zone_id: str, issue_type: str) -> dict:
     """Draft a field team alert for a specific zone and issue type.
     issue_type can be DENGUE_RISK, CLINIC_OVERLOAD, or MATERNAL_CARE_DROP."""
@@ -283,6 +312,8 @@ Your behaviour:
 - For the morning briefing: call get_anomalies and get_city_summary together
 - Keep responses concise and actionable
 - When presenting health details for a specific zone, list each metric on a new line (e.g., Metric: Value). Do not use bullet points, asterisks, or paragraphs.
+- When generating the morning briefing or answering questions about vaccination or disease risk, always call get_who_context to compare zone metrics against India national WHO benchmarks. Highlight gaps between zone performance and national averages.
+- Example: "Zone 7 vaccination coverage is 77% vs India national average of 94% per WHO 2024 data."
 """
 
 def create_agent():
@@ -296,6 +327,7 @@ def create_agent():
             get_all_zones_summary,
             get_anomalies,
             get_city_summary,
+            get_who_context,
             draft_field_alert
         ]
     )
