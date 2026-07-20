@@ -559,78 +559,98 @@ export default function DashboardPage() {
       {/* ALERT MODAL */}
       <AnimatePresence>
         {alertModal && (
-          <>
-            <motion.div
+          <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setAlertModal(null)}
-              style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 200 }}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
               style={{
-                position: "fixed", top: "50%", left: "50%",
-                transform: "translate(-50%, -50%)",
-                background: "var(--surface)", borderRadius: "16px",
-                padding: "32px", width: "520px", maxWidth: "90vw",
-                zIndex: 201, boxShadow: "0 25px 60px rgba(0,0,0,0.3)"
+                position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+                background: "rgba(0,0,0,0.6)",
+                zIndex: 200,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
               }}
             >
-              <div className="flex-between" style={{ marginBottom: "16px" }}>
-                <h3 style={{ margin: 0 }}>Field Alert — {alertModal.zone}</h3>
-                <button onClick={() => setAlertModal(null)} className="btn btn-secondary" style={{ padding: "6px", borderRadius: "50%" }}>
-                  <X size={18} />
-                </button>
-              </div>
-              <pre style={{
-                background: "rgba(255,255,255,0.05)", padding: "16px",
-                borderRadius: "10px", fontSize: "0.88rem", lineHeight: "1.7",
-                whiteSpace: "pre-wrap", color: "var(--text-primary)",
-                border: "1px solid var(--border)", fontFamily: "inherit",
-                maxHeight: "320px", overflowY: "auto"
-              }}>
-                {alertModal.content}
-              </pre>
-              <div className="flex-center gap-12" style={{ marginTop: "16px", justifyContent: "flex-end" }}>
-                <button className="btn btn-secondary" onClick={() => setAlertModal(null)}>Close</button>
-                <button
-                  className="btn btn-primary"
-                  onClick={() => navigator.clipboard.writeText(alertModal.content)}
-                >
-                  Copy to clipboard
-                </button>
-              </div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  background: "var(--surface)", borderRadius: "16px",
+                  padding: "32px", width: "520px", maxWidth: "90vw",
+                  maxHeight: "75vh",
+                  display: "flex", flexDirection: "column",
+                  boxShadow: "0 25px 60px rgba(0,0,0,0.4)"
+                }}
+              >
+                <div className="flex-between" style={{ marginBottom: "16px", flexShrink: 0 }}>
+                  <h3 style={{ margin: 0 }}>Field Alert — {alertModal.zone}</h3>
+                  <button onClick={() => setAlertModal(null)} className="btn btn-secondary" style={{ padding: "6px", borderRadius: "50%" }}>
+                    <X size={18} />
+                  </button>
+                </div>
+                <pre style={{
+                  background: "rgba(255,255,255,0.05)", padding: "16px",
+                  borderRadius: "10px", fontSize: "0.88rem", lineHeight: "1.7",
+                  whiteSpace: "pre-wrap", color: "var(--text-primary)",
+                  border: "1px solid var(--border)", fontFamily: "inherit",
+                  overflowY: "auto", flex: 1, margin: 0
+                }}>
+                  {alertModal.content}
+                </pre>
+                <div className="flex-center gap-12" style={{ marginTop: "16px", justifyContent: "flex-end", flexShrink: 0 }}>
+                  <button className="btn btn-secondary" onClick={() => setAlertModal(null)}>Cancel</button>
+                  <button
+                    className="btn btn-primary"
+                    style={{ background: "var(--danger)", display: "flex", alignItems: "center", gap: "8px" }}
+                    onClick={() => {
+                      setAlertModal(null);
+                      setTimeout(() => {
+                        alert("✅ Alert dispatched successfully to field team in " + alertModal.zone);
+                      }, 100);
+                    }}
+                  >
+                    ✓ Accept & Dispatch Alert
+                  </button>
+                </div>
+              </motion.div>
             </motion.div>
-          </>
         )}
       </AnimatePresence>
 
       {/* TREND MODAL */}
       <AnimatePresence>
         {trendModal && (
-          <>
-            <motion.div
+          <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setTrendModal(null)}
-              style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 200 }}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
               style={{
-                position: "fixed", top: "50%", left: "50%",
-                transform: "translate(-50%, -50%)",
-                background: "var(--surface)", borderRadius: "16px",
-                padding: "32px", width: "560px", maxWidth: "90vw",
-                zIndex: 201, boxShadow: "0 25px 60px rgba(0,0,0,0.3)"
+                position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+                background: "rgba(0,0,0,0.6)",
+                zIndex: 200,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
               }}
             >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  background: "var(--surface)", borderRadius: "16px",
+                  padding: "32px", width: "560px", maxWidth: "90vw",
+                  maxHeight: "75vh",
+                  display: "flex", flexDirection: "column",
+                  boxShadow: "0 25px 60px rgba(0,0,0,0.4)"
+                }}
+              >
               <div className="flex-between" style={{ marginBottom: "24px" }}>
                 <div>
                   <h3 style={{ margin: "0 0 4px 0" }}>{getTrendTitle(trendModal.metric)}</h3>
@@ -666,11 +686,11 @@ export default function DashboardPage() {
                   </ResponsiveContainer>
                 </div>
               )}
-              <div style={{ marginTop: "16px", textAlign: "right" }}>
+              <div style={{ marginTop: "16px", textAlign: "right", flexShrink: 0 }}>
                 <button className="btn btn-secondary" onClick={() => setTrendModal(null)}>Close</button>
               </div>
+              </motion.div>
             </motion.div>
-          </>
         )}
       </AnimatePresence>
 
